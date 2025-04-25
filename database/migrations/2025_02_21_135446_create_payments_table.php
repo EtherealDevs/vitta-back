@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('classSchedule_id')->constrained('class_schedules');
-            $table->foreignId('student_id')->constrained('students');
+            $table->foreignId('classSchedule_id')->constrained('class_schedules')->onDelete('cascade');
+            $table->foreignId('student_id')->constrained('students')->onDelete('cascade');
             $table->date('payment_date')->nullable();
-            $table->decimal('amount', 8, 2);
+            $table->decimal('amount', 8, 2)->nullable();
             $table->enum('status', ['pagado', 'pendiente', 'rechazado'])->default('pendiente');
-            $table->date('date_start');
+            $table->date('date_start')->nullable();
             $table->date('expiration_date');
             $table->timestamps();
         });

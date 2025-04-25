@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\ClasseController;
 use App\Http\Controllers\ClassScheduleController;
@@ -26,11 +27,15 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $user;
 });
 Route::middleware(['auth:sanctum'])->group(function () {
+    Route::post('/upload/comprobante', [PaymentController::class, 'storeComprobante']);
+    Route::get('/comprobante/download/{filename}', [PaymentController::class, 'downloadComprobante']);
+    Route::get('/attendances/getAllForCurrent', [AttendanceController::class, 'getAllAttendancesForCurrentStudent']);
+    Route::apiResource('class/timeslots', ClassScheduleTimeslotController::class);
+    Route::apiResource('attendances', AttendanceController::class);
     Route::apiResource('students', StudentController::class);
     Route::apiResource('branches', BranchController::class)->except(['index', 'show']);
     Route::apiResource('teachers', TeacherController::class);
     Route::apiResource('classSchedules', ClassScheduleController::class);
-    Route::apiResource('payments', PaymentController::class);
     Route::apiResource('classes', ClasseController::class);
     Route::apiResource('class/students', ClassScheduleTimeslotStudentController::class);
     Route::apiResource('class/teachers', ClassScheduleTimeslotTeacherController::class);
@@ -40,6 +45,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('users', UserController::class)->only(['index', 'update']);
     Route::get('users/roles', [UserController::class, 'roles']);
 });
+Route::apiResource('payments', PaymentController::class);
 Route::apiResource('products', ProductController::class)->only(['index', 'show']);
 Route::apiResource('plans', PlanController::class)->only(['index', 'show']);
 Route::apiResource('schedules', SchedulesController::class)->only(['index', 'show']);

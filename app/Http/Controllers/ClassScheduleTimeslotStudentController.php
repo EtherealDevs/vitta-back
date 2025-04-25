@@ -31,7 +31,6 @@ class ClassScheduleTimeslotStudentController extends Controller
         // dd($timeslot);
         $classSchedule->load('class', 'schedule', 'students', 'teachers');
         return view('create-classStudent', ['classSchedule' => $classSchedule, 'students' => $students, 'timeslot' => $timeslot]);
-
     }
     public function store(Request $request)
     {
@@ -40,19 +39,18 @@ class ClassScheduleTimeslotStudentController extends Controller
             'students.*' => 'required|integer|exists:students,id',
             'c_sch_ts_id' => 'required|integer|exists:class_schedule_timeslots,id',
         ]);
-        
+
         $classScheduleTimeslot = ClassScheduleTimeslot::find($request->c_sch_ts_id);
         foreach ($request->students as $student) {
             $student = Student::find($student);
             try {
                 $classScheduleTimeslot->students()->syncWithoutDetaching($student);
-                
             } catch (\Exception $e) {
                 return response()->json(['message' => $e->getMessage()], 500);
             }
         }
         $classScheduleTimeslotStudents = ClassScheduleTimeslotStudent::where('c_sch_ts_id', $request->c_sch_ts_id)->whereIn('student_id', $request->students)->get();
-        
+
         // collection of resources
         $classScheduleTimeslotStudentsResource = ClassScheduleTimeslotStudentResource::collection($classScheduleTimeslotStudents);
 
@@ -63,17 +61,33 @@ class ClassScheduleTimeslotStudentController extends Controller
         ];
         return response()->json($data, 201);
     }
-    public function edit(Request $request)
-    {
-        $classScheduleTimeslot = ClassScheduleTimeslot::find($id);
-        $students = [];
-        $studentsInClass = $classScheduleTimeslot->students;
-        $payments = Payment::where('status', 'pagado')->where('classSchedule_id', $classScheduleTimeslot->classSchedule->id)->get();
-        foreach ($payments as $payment) {
-            $students[] = $payment->student;
-        }
+    // public function edit(Request $request)
+    // {
+    //     $classScheduleTimeslot = ClassScheduleTimeslot::find($id);
+    //     $students = [];
+    //     $studentsInClass = $classScheduleTimeslot->students;
+    //     $payments = Payment::where('status', 'pagado')->where('classSchedule_id', $classScheduleTimeslot->classSchedule->id)->get();
+    //     foreach ($payments as $payment) {
+    //         $students[] = $payment->student;
+    //     }
 
-        return view('edit-classStudent', ['classScheduleTimeslot' => $classScheduleTimeslot, 'students' => $students]);
+    //     return view('edit-classStudent', ['classScheduleTimeslot' => $classScheduleTimeslot, 'students' => $students]);
+    // }
+    public function show(string $id)
+    {
+        try {
+            $classScheduleTimeslotStudent = ClassScheduleTimeslotStudent::where('student_id', $id)->get();
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
+        $classScheduleTimeslotStudent->load('student', 'timeslot', 'scheduleTimeslot');
+        $classScheduleTimeslotStudent =  ClassScheduleTimeslotStudentResource::collection($classScheduleTimeslotStudent);
+        $data = [
+            'classScheduleTimeslotStudent' => $classScheduleTimeslotStudent,
+            'message' => 'ClassScheduleTimeslotStudent retrieved successfully',
+            'status' => 'success (200)'
+        ];
+        return response()->json($data, 200);
     }
     public function update(Request $request)
     {
@@ -82,19 +96,18 @@ class ClassScheduleTimeslotStudentController extends Controller
             'students.*' => 'required|integer|exists:students,id',
             'c_sch_ts_id' => 'required|integer|exists:class_schedule_timeslots,id',
         ]);
-        
+
         $classScheduleTimeslot = ClassScheduleTimeslot::find($request->c_sch_ts_id);
         foreach ($request->students as $student) {
             $student = Student::find($student);
             try {
                 $classScheduleTimeslot->students()->sync($student);
-                
             } catch (\Exception $e) {
                 return response()->json(['message' => $e->getMessage()], 500);
             }
         }
         $classScheduleTimeslotStudents = ClassScheduleTimeslotStudent::where('c_sch_ts_id', $request->c_sch_ts_id)->whereIn('student_id', $request->students)->get();
-        
+
         // collection of resources
         $classScheduleTimeslotStudentsResource = ClassScheduleTimeslotStudentResource::collection($classScheduleTimeslotStudents);
         $data = [
