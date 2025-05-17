@@ -12,6 +12,7 @@ use Illuminate\Validation\Rule;
 
 class StudentController extends Controller
 {
+    //Testing this
     public function index()
     {
         // Retrieve all students from the database
@@ -21,7 +22,7 @@ class StudentController extends Controller
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
         }
-        $students->load('branch', 'payments');
+        $students->load('branch', 'payments', 'attendances', 'classes');
         $students = StudentResource::collection($students);
         $data = [
             'students' => $students,
@@ -40,7 +41,6 @@ class StudentController extends Controller
             return response()->json(['message' => $e->getMessage()], 500);
         }
         $student->load('branch');
-        $student->load('plans');
         $student->load('attendances');
         $student->load('classes');
 
